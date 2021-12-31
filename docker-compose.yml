@@ -1,0 +1,48 @@
+version: '3'
+
+volumes:
+    influx_data: {}
+    grafana_data: {}
+    cashtag_grab_data: {}
+
+services:
+  influxdb:
+    image: influxdb:2.1.1
+    container_name: influx
+    volumes:
+      - influx_data:/var/lib/influxdb2
+    ports:
+      - 8086:8086
+    env_file:
+      - ./influx/influxv2.env
+  grafana:
+    image: grafana/grafana:8.3.4
+    container_name: grafana
+    ports:
+      - 3000:3000
+    links:
+      - influxdb
+    depends_on:
+      - influxdb
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/influxdatasource.yaml:/etc/grafana/provisioning/datasources/influxdatasource.yaml
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+  cashtag_grab:
+    image: python:3.9.10-slim-buster
+    container_name: cashtag_grab
+    links:
+      - influxdb
+    depends_on:
+      - influxdb
+    volumes:
+      - ./grab.py:/grab.py
+      - ./most_common_words:/most_common_words
+    command: bash -c "
+      pip install tweepy schedule influxdb_client &&
+      apt update &&
+      apt -y install cron &&
+      echo '0 * * * * root python3 /grab.py' >> /etc/crontab &&
+      service cron start &&
+      tail -F anything"
