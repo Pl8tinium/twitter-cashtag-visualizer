@@ -12,7 +12,7 @@ access_token = ''
 access_token_secret = ''
 
 ignores = ["cryptotrendin", "dexscreener"]
-cash_tag_path = '/home/opc/twitterCashTagGrab/'
+cash_tag_path = '/home/opc/twitterCashTagGrabMongo/'
 # cash_tag_path = 'C:\\twitterCashTagGrab\\'
 
 call_amount = 10
@@ -41,13 +41,8 @@ if os.path.isfile(since_id_path):
     with open(since_id_path, 'r') as f:
         since_id = int(f.read())
 
-# Get mentions if exist from previous run
-mentions = {}
-if os.path.isfile(mentions_path):
-    with open(mentions_path, 'r') as f:
-        mentions = json.loads(f.read())
-
 latest_tweet_time = None
+mentions = []
 for page in tweepy.Cursor(api.home_timeline, count=200, tweet_mode="extended", since_id=since_id).pages(call_amount):
     for status in page:
         if status.user.screen_name in ignores:
@@ -59,15 +54,14 @@ for page in tweepy.Cursor(api.home_timeline, count=200, tweet_mode="extended", s
                 matched.append(cash_tag)
                 meta = {
                     'id' : status.id,
+                    'cash_tag' : cash_tag,
                     'favorite_amount' : status.favorite_count,
                     'retweet_amount' : status.retweet_count,
                     'screen_name' : status.user.screen_name,
                     'created_at' : status.created_at,
                 }
-                if cash_tag in mentions:
-                    mentions[cash_tag].append(meta)
-                else:
-                    mentions[cash_tag] = [meta]
+                mentions.append(meta)
+
         # know when the latest tweet was posted so the tool only fetches tweets after that in the next run
         if latest_tweet_time == None or latest_tweet_time < status.created_at:
             latest_tweet_time = status.created_at
@@ -76,5 +70,5 @@ for page in tweepy.Cursor(api.home_timeline, count=200, tweet_mode="extended", s
 #write mentions/ current since_id to file
 with open(since_id_path, 'w') as f:
     f.write(str(since_id))
-with open(mentions_path, 'w') as f:
-    f.write(json.dumps(mentions, sort_keys=True, indent=4, default=str))
+
+mentions_db.insert_many(mentions)
