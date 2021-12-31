@@ -4,6 +4,7 @@ from tweepy.parsers import JSONParser
 import os
 import json
 import re
+import pymongo
 
 consumer_key = ''
 consumer_secret = ''
@@ -25,6 +26,10 @@ cash_tag_reg = r"\$[a-zA-Z]{3,5}"
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
+
+myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = myclient["db"]
+mentions_db = mydb["mentions"]
 
 # check if main dir exists, if not create
 if not os.path.isdir(cash_tag_path):

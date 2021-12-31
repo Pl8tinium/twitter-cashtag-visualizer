@@ -1,5 +1,5 @@
 # Prequisites
-- get python and tweepy
+- get python and tweepy + pymongo
 `pip install tweepy/ pip3 install tweepy`
 - change the *cash_tag_path* variable to a desired output directory, keep the used syntax
 - Optional. Put in twitter user names into the *ignores* array var to ignore their tweets.
