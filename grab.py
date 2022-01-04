@@ -4,7 +4,7 @@ from tweepy.parsers import JSONParser
 import os
 import json
 import re
-import pymongo
+from prometheus_client import CollectorRegistry, push_to_gateway, Counter
 
 consumer_key = ''
 consumer_secret = ''
@@ -27,9 +27,8 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["db"]
-mentions_db = mydb["mentions"]
+registry = CollectorRegistry()
+prom_counter = Counter('mentions', 'Shows daily mentions of cash tags', ['cash_tag', 'id', 'favorite_count', 'retweet_count', 'screen_name'], registry=registry)
 
 # check if main dir exists, if not create
 if not os.path.isdir(cash_tag_path):
@@ -42,7 +41,6 @@ if os.path.isfile(since_id_path):
         since_id = int(f.read())
 
 latest_tweet_time = None
-mentions = []
 for page in tweepy.Cursor(api.home_timeline, count=200, tweet_mode="extended", since_id=since_id).pages(call_amount):
     for status in page:
         if status.user.screen_name in ignores:
@@ -52,15 +50,7 @@ for page in tweepy.Cursor(api.home_timeline, count=200, tweet_mode="extended", s
             cash_tag = match.group().lower()
             if cash_tag not in matched:
                 matched.append(cash_tag)
-                meta = {
-                    'id' : status.id,
-                    'cash_tag' : cash_tag,
-                    'favorite_amount' : status.favorite_count,
-                    'retweet_amount' : status.retweet_count,
-                    'screen_name' : status.user.screen_name,
-                    'created_at' : status.created_at,
-                }
-                mentions.append(meta)
+                prom_counter.labels(cash_tag, status.id, status.favorite_count, status.retweet_count, status.user.screen_name).inc(1)
 
         # know when the latest tweet was posted so the tool only fetches tweets after that in the next run
         if latest_tweet_time == None or latest_tweet_time < status.created_at:
@@ -71,4 +61,4 @@ for page in tweepy.Cursor(api.home_timeline, count=200, tweet_mode="extended", s
 with open(since_id_path, 'w') as f:
     f.write(str(since_id))
 
-mentions_db.insert_many(mentions)
+push_to_gateway('localhost:9091', job='python', registry=registry)
