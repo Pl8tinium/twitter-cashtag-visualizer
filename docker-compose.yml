@@ -1,39 +1,45 @@
-version: '3.7'
+version: '3'
 
 volumes:
-    prometheus_data: {}
+    influx_data: {}
     grafana_data: {}
-
-# networks:
-#   front-tier:
-#   back-tier:
+    cashtag_grab_data: {}
 
 services:
-
-  prometheus:
-    image: prom/prometheus
+  influxdb:
+    image: influxdb:2.1.1
+    container_name: influx
     volumes:
-      - ./prometheus/:/etc/prometheus/
-      - prometheus_data:/prometheus
+      - influx_data:/var/lib/influxdb2
     ports:
-      - 9090:9090
-    links:
-      - grafana
-  
+      - 8086:8086
+    env_file:
+      - ./influx/influxv2.env
   grafana:
-    image: grafana/grafana
-    # depends_on:
-    #   - prometheus
-    volumes:
-      - grafana_data:/var/lib/grafana
+    image: grafana/grafana:8.3.4
+    container_name: grafana
     ports:
       - 3000:3000
-    # links:
-    #   - prometheus
- 
-  pushgateway:
-   image: prom/pushgateway
-   expose:
-     - 9091
-   ports:
-     - "9091:9091"
+    links:
+      - influxdb
+    depends_on:
+      - influxdb
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/influxdatasource.yaml:/etc/grafana/provisioning/datasources/influxdatasource.yaml
+      - grafana_data:/var/lib/grafana
+      # /etc/grafana/provisioning/dashboards
+  cashtag_grab:
+    image: python:3.9.10-slim-buster
+    container_name: cashtag_grab
+    links:
+      - influxdb
+    depends_on:
+      - influxdb
+    volumes:
+      - cashtag_grab_data:/cashtag_grab
+      - ./grab.py:/grab.py
+    command: bash -c "
+      pip install tweepy schedule influxdb_client &&
+      cd / &&
+      python grab.py"
