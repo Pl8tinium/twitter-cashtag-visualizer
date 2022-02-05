@@ -7,10 +7,10 @@ from influxdb_client import InfluxDBClient
 from influxdb_client .client.write_api import SYNCHRONOUS
 import time
 
-consumer_key = 'szgPfe8ILks30ofFUywJFBhKF'
-consumer_secret = 'ahQS70NpvxHCYuWWGZo5FK1rnGWcN4Rrw1609acUEkn2It8tnN'
-access_token = '4450264233-ZCqjV6uAGThQ75730ab4iNQeqECH1HnSwXXAVGV'
-access_token_secret = 'zz4ZFSr39t8PlRRFGw9NoHGdQ50ksKUnHGMmV350vYNRX'
+consumer_key = ''
+consumer_secret = ''
+access_token = ''
+access_token_secret = ''
 
 ignores = ["cryptotrendin", "dexscreener"]
 cash_tag_path = '/cashtag_grab/'
