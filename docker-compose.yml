@@ -28,7 +28,7 @@ services:
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
       - ./grafana/influxdatasource.yaml:/etc/grafana/provisioning/datasources/influxdatasource.yaml
       - grafana_data:/var/lib/grafana
-      # /etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
   cashtag_grab:
     image: python:3.9.10-slim-buster
     container_name: cashtag_grab
@@ -37,8 +37,8 @@ services:
     depends_on:
       - influxdb
     volumes:
-      - cashtag_grab_data:/cashtag_grab
       - ./grab.py:/grab.py
+      - ./most_common_words:/most_common_words
     command: bash -c "
       pip install tweepy schedule influxdb_client &&
       cd / &&
