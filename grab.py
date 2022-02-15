@@ -45,7 +45,7 @@ def get_tickers():
 
     cleaned_tickers = []
     for ticker in set(tickers):
-        if len(ticker) != 1:
+        if len(ticker) != 1 and len(ticker) <= 7:
             if not ticker in common_words + crypto_words:            
                 cleaned_tickers.append(ticker)
 

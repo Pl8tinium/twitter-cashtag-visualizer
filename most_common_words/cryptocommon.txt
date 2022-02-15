@@ -75,6 +75,7 @@ solidity
 staking
 sto
 scam
+sbf
 tangle
 testnet
 ticker
