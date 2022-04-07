@@ -19,6 +19,7 @@ https://developer.twitter.com/
     2. Setup OAuth 1.0a under "User authentication settings" (callback url/ website url dont matter, just put in googles address)
     3. Retrieve the necessary auth keys under "Keys and tokens" and *plug them into the python script* (consumer_key, consumer_secret, access_token, access_token_secret)
 - Optional. Put in twitter user names into the *ignores* array var to ignore their tweets (useful to ignore bot accs).
+- Optional. Put in a *public/ unlisted* pastebin url with cashtags you want to ignore in the *ignoreCashtagsPastebinUrl* variable. For the pastebin its the same syntax as shown in the "most_common_words" (folder).
 
 # How to get it working
 - do a *docker-compose up -d* in this directory and visit *localhost:3000*

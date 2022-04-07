@@ -21,8 +21,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
-  "iteration": 1645058139843,
+  "id": 1,
+  "iteration": 1649342069294,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -112,7 +112,7 @@
             "type": "influxdb",
             "uid": "P5697886F9CA74929"
           },
-          "query": "table_data =\r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) => r[\"user\"] == \"${txtboxUser}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> keep(columns: [\"_time\", \"_value\", \"cashtag\", \"status_id\"])\r\n\r\nif \"${switchLikesMentions}\" == \"likes\" then group(columns: [\"cashtag\", \"status_id\"], tables: table_data)\r\nelse group(tables: table_data)\r\n  |> window(every: ${switchMentionInterval})  \r\n  |> count()\r\n  |> group(columns: [\"_time\"])",
+          "query": "table_data =\r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) => r[\"user\"] == \"${txtboxUser}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> keep(columns: [\"_time\", \"_value\", \"cashtag\", \"status_id\"])\r\n\r\nif \"${switchMetrics}\" != \"mentions\" then group(columns: [\"cashtag\", \"status_id\"], tables: table_data)\r\nelse group(tables: table_data)\r\n  |> window(every: ${switchMentionInterval})  \r\n  |> count()\r\n  |> group(columns: [\"_time\"])",
           "refId": "A"
         }
       ],
@@ -189,7 +189,7 @@
             "type": "influxdb",
             "uid": "P5697886F9CA74929"
           },
-          "query": "table_data = \r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) => r[\"user\"] == \"${txtboxUser}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> group(columns: [\"cashtag\"])\r\n\r\nif \"${switchLikesMentions}\" == \"likes\" then sum(tables: table_data)\r\n  |> group()\r\nelse count(tables: table_data)\r\n  |> group()",
+          "query": "table_data = \r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) => r[\"user\"] == \"${txtboxUser}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> group(columns: [\"cashtag\"])\r\n\r\nif \"${switchMetrics}\" != \"mentions\" then sum(tables: table_data)\r\n  |> group()\r\nelse count(tables: table_data)\r\n  |> group()",
           "refId": "A"
         }
       ],
@@ -218,7 +218,7 @@
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 7,
             "scaleDistribution": {
@@ -281,7 +281,7 @@
             "type": "influxdb",
             "uid": "P5697886F9CA74929"
           },
-          "query": "table_data =\r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) => r[\"cashtag\"] == \"${txtboxCashtag}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> keep(columns: [\"_time\", \"_value\", \"cashtag\", \"status_id\"])\r\n\r\nif \"${switchLikesMentions}\" == \"likes\" then group(columns: [\"cashtag\", \"status_id\"], tables: table_data)   \r\n   |> group()\r\n  else group(tables: table_data)\r\n   |> window(every: ${switchMentionInterval})  \r\n   |> count()\r\n   |> group(columns: [\"_time\"])\r\n",
+          "query": "table_data =\r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) => r[\"cashtag\"] == \"${txtboxCashtag}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> keep(columns: [\"_time\", \"_value\", \"cashtag\", \"status_id\"])\r\n\r\nif \"${switchMetrics}\" != \"mentions\" then group(columns: [\"cashtag\", \"status_id\"], tables: table_data)   \r\n   |> group()\r\n  else group(tables: table_data)\r\n   |> window(every: ${switchMentionInterval})  \r\n   |> count()\r\n   |> group(columns: [\"_time\"])\r\n",
           "refId": "A"
         }
       ],
@@ -358,7 +358,7 @@
             "type": "influxdb",
             "uid": "P5697886F9CA74929"
           },
-          "query": "table_data = \r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> group(columns: [\"cashtag\", \"user\"])\r\n  |> max()\r\n  |> group(columns: [\"cashtag\"])\r\n\r\nif \"${switchLikesMentions}\" == \"likes\" then sum(tables: table_data)\r\n  |> group()\r\nelse count(tables: table_data)\r\n  |> group()",
+          "query": "table_data = \r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> group(columns: [\"cashtag\", \"user\"])\r\n  |> max()\r\n  |> group(columns: [\"cashtag\"])\r\n\r\nif \"${switchMetrics}\" != \"mentions\" then sum(tables: table_data)\r\n  |> group()\r\nelse count(tables: table_data)\r\n  |> group()",
           "refId": "A"
         }
       ],
@@ -435,7 +435,7 @@
             "type": "influxdb",
             "uid": "P5697886F9CA74929"
           },
-          "query": "table_data = \r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> group(columns: [\"cashtag\"])\r\n\r\nif \"${switchLikesMentions}\" == \"likes\" then sum(tables: table_data)\r\n  |> group()\r\nelse count(tables: table_data)\r\n  |> group()",
+          "query": "table_data = \r\nfrom(bucket: \"mybucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cashtag_grab\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"${switchLikesRetweets}\")\r\n  |> filter(fn: (r) =>\r\n      if \"${switchPrecisePrefetched}\" != \"both\"\r\n        then r[\"search_type\"] == \"${switchPrecisePrefetched}\"\r\n      else\r\n        true\r\n  )\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> group(columns: [\"status_id\", \"cashtag\"])\r\n  |> map(fn:(r) => ({ r with insert_time: int(v: r.insert_time) }))\r\n  |> max(column: \"insert_time\")\r\n  |> group(columns: [\"cashtag\"])\r\n\r\nif \"${switchMetrics}\" != \"mentions\" then sum(tables: table_data)\r\n  |> group()\r\nelse count(tables: table_data)\r\n  |> group()",
           "refId": "A"
         }
       ],
@@ -495,17 +495,17 @@
         "auto_min": "10s",
         "current": {
           "selected": false,
-          "text": "likes",
-          "value": "likes"
+          "text": "likes_retweets",
+          "value": "likes_retweets"
         },
         "hide": 0,
-        "label": "Likes/ Mentions",
-        "name": "switchLikesMentions",
+        "label": "Likes | Retweets / Mentions",
+        "name": "switchMetrics",
         "options": [
           {
             "selected": true,
-            "text": "likes",
-            "value": "likes"
+            "text": "likes_retweets",
+            "value": "likes_retweets"
           },
           {
             "selected": false,
@@ -513,7 +513,7 @@
             "value": "mentions"
           }
         ],
-        "query": "likes, mentions",
+        "query": "likes_retweets, mentions",
         "queryValue": "",
         "refresh": 2,
         "skipUrlSync": false,
@@ -634,7 +634,7 @@
         "auto_count": 30,
         "auto_min": "10s",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "precise",
           "value": "precise"
         },
@@ -667,13 +667,13 @@
     ]
   },
   "time": {
-    "from": "now-2d",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Likes/Retweets/Mentions",
   "uid": "N6TMEW-7k",
-  "version": 6,
+  "version": 2,
   "weekStart": ""
 }

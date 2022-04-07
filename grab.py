@@ -18,6 +18,8 @@ access_token_secret = ''
 tweet_update_timeframe = "1"
 # ignore certain accounts
 ignores = ["cryptotrendin", "dexscreener"]
+# ignore certain cashtags
+ignoreCashtagsPastebinUrl = ''
 
 admin_token = "mytoken"
 org = "myorg"
@@ -47,13 +49,25 @@ def get_tickers():
 
     cleaned_tickers = []
     for ticker in set(tickers):
-        if len(ticker) != 1 and len(ticker) <= 7:
+        if len(ticker) > 1 and len(ticker) <= 7:
             if not ticker in common_words + crypto_words:            
                 cleaned_tickers.append(ticker)
 
     print("found " + str(len(cleaned_tickers)) + " tickers on coingecko without ambiguity")
     
     return cleaned_tickers
+
+def fetchUserIgnoredCashtags():
+    try:
+        if not '/raw/' in ignoreCashtagsPastebinUrl:
+            lastSlash = ignoreCashtagsPastebinUrl.rfind('/')
+            ignoreCashtagsPastebinUrl = ignoreCashtagsPastebinUrl[0:lastSlash] + '/raw' + ignoreCashtagsPastebinUrl[lastSlash:]
+        data = requests.get(ignoreCashtagsPastebinUrl).text
+        data.replace('\r', '').split('\n')
+    except:
+        data = []
+
+    return data
 
 # fetch all tweets after the found tweet id
 def get_tweet_id_to_fetch_since(client):
@@ -99,8 +113,6 @@ def create_point(status, cash_tag, search_type):
         }
     }
 
-
-
 def main():    
     # init stuff for influx
     print("******************* STARTING RUN *******************")
@@ -111,7 +123,7 @@ def main():
     since_id = get_tweet_id_to_fetch_since(client)
 
     if do_prefetch_extraction:
-        prefetched_tickers = get_tickers()
+        prefetched_tickers = get_tickers()    
 
     latest_tweet_time = None
     for page in tweepy.Cursor(api.home_timeline, count=200, tweet_mode="extended", since_id=since_id).pages(call_amount):
@@ -141,17 +153,19 @@ def main():
                 latest_tweet_time = status.created_at
                 since_id = status.id
 
+    # ignore certain cashtags based on user supplied pastebin url
+    if ignoreCashtagsPastebinUrl != '':        
+        userIgnoredCashtags = fetchUserIgnoredCashtags()
+        if len(userIgnoredCashtags) != 0:
+            pointsCopy = points
+            points = []
+            for point in pointsCopy:
+                if not point['tags']['cashtag'][1:] in userIgnoredCashtags:
+                    points.append(point)
+
     # influx db write and close
     write_api.write(bucket=bucket, record=points)
     client.close()
     print("******************* FINISHED RUN *******************")
 
 main()
-
-# redo whole process every hour (old, now done with cron job)
-# time_one_min_before = datetime.datetime.now() - datetime.timedelta(minutes=1)
-# schedule.every().hour.at(time_one_min_before.strftime("%M:%S")).do(main)
-
-# while True:
-#     schedule.run_pending()
-#     time.sleep(10 * 1000)
