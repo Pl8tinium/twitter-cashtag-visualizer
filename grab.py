@@ -58,6 +58,7 @@ def get_tickers():
     return cleaned_tickers
 
 def fetchUserIgnoredCashtags():
+    global ignoreCashtagsPastebinUrl
     try:
         if not '/raw/' in ignoreCashtagsPastebinUrl:
             lastSlash = ignoreCashtagsPastebinUrl.rfind('/')
